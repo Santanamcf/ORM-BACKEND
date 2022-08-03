@@ -7,11 +7,12 @@ const { Product, Category, Tag, ProductTag } = require('../../models');
 router.get('/', async (req, res) => {
   try {
     const getProducts = await Product.findAll({
-      include: [Category, Tag],
+      include: [{ model: Category, Tag}],
     });
     res.status(200).json(getProducts);
   } catch (err) {
     res.status(500).json(err);
+    console.log(err)
   }
 });
   // find all products
@@ -21,8 +22,8 @@ router.get('/', async (req, res) => {
 // get one product
 router.get('/:id', async (req, res) => {
   try {
-    const getProducts = await getProducts.findByPk(req.params.id, {
-      include: [Category, Tag],
+    const getProducts = await Product.findByPk(req.params.id, {
+      include: [{ model: Category, Tag}],
     });
 
     if (!getProducts) {
@@ -72,7 +73,7 @@ router.post('/', async (req, res) => {
 });
 
 // update product
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
   // update product data
   Product.update(req.body, {
     where: {
@@ -113,8 +114,17 @@ router.put('/:id', (req, res) => {
     });
 });
 
-router.delete('/:id', (req, res) => {
-  // delete one product by its `id` value
-});
+router.delete('/:id', async (req, res) => {
+  Product.destroy( {
+    where: {
+      id: req.params.id,
+    }
+  }).then(data=>{
+    res.json(data)
+  }).catch(err=>{
+    res.status(500).json({
+      msg: "error", err})
+    })
+  });
 
 module.exports = router;
